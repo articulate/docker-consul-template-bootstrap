@@ -26,3 +26,36 @@ export {{ . | toUpper}}{{with secret (printf "secret/apps/%s/%s/env_vars/%s" (en
 {{range secrets (printf "secret/services/%s/env_vars" (env "SERVICE_NAME")) -}}
 export {{ . | toUpper}}{{with secret (printf "secret/services/%s/env_vars/%s" (env "SERVICE_NAME") .) }}="{{.Data.value}}"{{end}}
 {{end -}}
+
+######################################################
+##                                                  ##
+## Add Support for New Vault (0.10.0) Versioned K/V ##
+##                                                  ##
+######################################################
+
+## OLD DEPRECATED STYLE global secrets
+{{range secrets (printf "secret/metadata/global/%s/env_vars" (env "SERVICE_ENV")) -}}
+export {{ . | toUpper}}{{with secret (printf "secret/data/global/%s/env_vars/%s" (env "SERVICE_ENV") .) }}="{{.Data.data.value}}"{{end}}
+{{end -}}
+
+#NEW STYLE global secrets
+{{range secrets "secret/metadata/global/env_vars" -}}
+export {{ . | toUpper}}{{with secret (printf "secret/data/global/env_vars/%s" .) }}="{{.Data.data.value}}"{{end}}
+{{end -}}
+
+#products secrets
+{{if (env "SERVICE_PRODUCT") -}}
+{{range secrets (printf "secret/metadata/products/%s/env_vars" (env "SERVICE_PRODUCT")) -}}
+export {{ . | toUpper}}{{with secret (printf "secret/data/products/%s/env_vars/%s" (env "SERVICE_PRODUCT") .) }}="{{.Data.data.value}}"{{end}}
+{{end -}}
+{{end -}}
+
+#OLD DEPRECATED STYLE app secrets
+{{range secrets (printf "secret/metadata/apps/%s/%s/env_vars" (env "SERVICE_NAME") (env "SERVICE_ENV")) -}}
+export {{ . | toUpper}}{{with secret (printf "secret/data/apps/%s/%s/env_vars/%s" (env "SERVICE_NAME") (env "SERVICE_ENV") .) }}="{{.Data.data.value}}"{{end}}
+{{end -}}
+
+#NEW STYLE app secrets
+{{range secrets (printf "secret/metadata/services/%s/env_vars" (env "SERVICE_NAME")) -}}
+export {{ . | toUpper}}{{with secret (printf "secret/data/services/%s/env_vars/%s" (env "SERVICE_NAME") .) }}="{{.Data.data.value}}"{{end}}
+{{end -}}

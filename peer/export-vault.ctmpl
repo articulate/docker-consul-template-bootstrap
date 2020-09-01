@@ -36,3 +36,46 @@ export {{ . | toUpper}}{{with secret (printf "secret/apps/%s/stage/env_vars/%s" 
 export {{ . | toUpper}}{{with secret (printf "secret/services/%s/env_vars/%s" (env "SERVICE_NAME") .) }}="{{.Data.value}}"{{end}}
 {{end -}}
 {{end -}}
+
+######################################################
+##                                                  ##
+## Add Support for New Vault (0.10.0) Versioned K/V ##
+##                                                  ##
+######################################################
+
+## OLD DEPRECATED STYLE global secrets
+{{range secrets "secret/metadata/global/stage/env_vars" -}}
+{{if not (env (. | toUpper)) -}}
+export {{ . | toUpper}}{{with secret (printf "secret/data/global/stage/env_vars/%s" .) }}="{{.Data.data.value}}"{{end}}
+{{end -}}
+{{end -}}
+
+#NEW STYLE global secrets
+{{range secrets "secret/metadata/global/env_vars" -}}
+{{if not (env (. | toUpper)) -}}
+export {{ . | toUpper}}{{with secret (printf "secret/data/global/env_vars/%s" .) }}="{{.Data.data.value}}"{{end}}
+{{end -}}
+{{end -}}
+
+#products secrets
+{{if (env "SERVICE_PRODUCT") -}}
+{{range secrets (printf "secret/metadata/products/%s/env_vars" (env "SERVICE_PRODUCT")) -}}
+{{if not (env (. | toUpper)) -}}
+export {{ . | toUpper}}{{with secret (printf "secret/data/products/%s/env_vars/%s" (env "SERVICE_PRODUCT") .) }}="{{.Data.data.value}}"{{end}}
+{{end -}}
+{{end -}}
+{{end -}}
+
+#OLD DEPRECATED STYLE app secrets
+{{range secrets (printf "secret/metadata/apps/%s/stage/env_vars" (env "SERVICE_NAME")) -}}
+{{if not (env (. | toUpper)) -}}
+export {{ . | toUpper}}{{with secret (printf "secret/data/apps/%s/stage/env_vars/%s" (env "SERVICE_NAME") .) }}="{{.Data.data.value}}"{{end}}
+{{end -}}
+{{end -}}
+
+#NEW STYLE app secrets
+{{range secrets (printf "secret/metadata/services/%s/env_vars" (env "SERVICE_NAME")) -}}
+{{if not (env (. | toUpper)) -}}
+export {{ . | toUpper}}{{with secret (printf "secret/data/services/%s/env_vars/%s" (env "SERVICE_NAME") .) }}="{{.Data.data.value}}"{{end}}
+{{end -}}
+{{end -}}
